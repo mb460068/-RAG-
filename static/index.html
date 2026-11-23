@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <!-- 页面元信息：字符集、视口、主题色与搜索引擎描述 -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f2ede3" id="metaTheme" />
+    <meta name="description" content="面向高校科研资料与教务文件的智能问答助手" />
+    <title>高校可研与教务智能问答</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231b1712'/%3E%3Crect x='4' y='4' width='56' height='56' rx='13' fill='none' stroke='%23c9a86a' stroke-opacity='.5'/%3E%3Ctext x='32' y='44' font-family='serif' font-size='32' fill='%23e3c88f' text-anchor='middle'%3E%E7%A0%94%3C/text%3E%3C/svg%3E" />
+    <!-- 首屏主题初始化：读取本地偏好，避免深色模式闪屏 -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('edurag.theme');
+                if (!saved) {
+                    saved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                document.documentElement.dataset.theme = saved;
+                var meta = document.querySelector('meta[name="theme-color"]');
+                if (meta) {
+                    meta.setAttribute('content', saved === 'dark' ? '#0a0c10' : '#f2ede3');
+                }
+            } catch (error) { /* 主题读取失败时保持浅色 */ }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet" />
+    </noscript>
+    <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+    <!-- 内联 SVG 图标库：页面中通过 <use> 复用 -->
+    <svg class="icon-sprite" aria-hidden="true" focusable="false">
+        <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+        <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M6.5 7l.9 12.1a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4L17.5 7M10 11v5.5M14 11v5.5"/></symbol>
+        <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+        <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1Z"/></symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+        <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+        <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6.5C10.5 5 8.5 4.5 5 4.5V19c3.5 0 5.5.5 7 2 1.5-1.5 3.5-2 7-2V4.5c-3.5 0-5.5.5-7 2Z"/><path d="M12 6.5V21"/></symbol>
+        <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+        <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+        <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+        <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2.5" fill="currentColor" stroke="none"/></symbol>
+        <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5"/><circle cx="12" cy="16.5" r=".8" fill="currentColor" stroke="none"/></symbol>
+    </svg>
+
+    <div class="backdrop" aria-hidden="true"></div>
+
+    <noscript><p class="noscript">请启用 JavaScript 后使用教研问答。</p></noscript>
+
+    <div class="shell">
+        <!-- 左侧会话栏：品牌、新建对话、最近会话与服务状态 -->
+        <aside class="sidebar" id="sidebar" aria-label="会话列表">
+            <div class="brand">
+                <div class="seal" aria-hidden="true">研</div>
+                <div class="brand-copy">
+                    <p class="brand-name">教研问答</p>
+                    <p class="brand-tag">EDURAG · 知识与教务</p>
+                </div>
+            </div>
+
+            <button class="new-chat" id="newChatBtn" type="button">
+                <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>
+                <span>新建对话</span>
+            </button>
+
+            <div class="rail-head">
+                <span>最近会话</span>
+                <span class="rail-count" id="sessionCount">0</span>
+            </div>
+            <nav class="session-list" id="sessionList" aria-label="最近会话"></nav>
+
+            <div class="rail-foot">
+                <div class="status" title="后端服务状态">
+                    <span class="status-dot is-checking" id="statusDot"></span>
+                    <span id="statusText">连接中…</span>
+                </div>
+                <span class="rail-note">本地知识库</span>
+            </div>
+        </aside>
+
+        <main class="main">
+            <!-- 顶栏：当前会话标题与复制/清除/主题切换操作 -->
+            <header class="topbar">
+                <button class="icon-btn menu-btn" id="menuBtn" type="button" aria-label="打开会话列表">
+                    <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+                </button>
+                <div class="topbar-copy">
+                    <h1 id="convTitle">新对话</h1>
+                    <p id="convMeta">选择资料范围，开始提问</p>
+                </div>
+                <div class="topbar-actions">
+                    <button class="ghost-btn" id="copyAllBtn" type="button" title="复制当前对话" disabled>
+                        <svg class="icon" aria-hidden="true"><use href="#i-copy"/></svg><span>复制</span>
+                    </button>
+                    <button class="ghost-btn danger" id="clearBtn" type="button" title="清除当前对话" disabled>
+                        <svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg><span>清除</span>
+                    </button>
+                    <button class="icon-btn" id="themeBtn" type="button" aria-label="切换主题">
+                        <svg class="icon" aria-hidden="true"><use href="#i-moon"/></svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- 对话消息区：由前端脚本动态渲染 -->
+            <section class="thread" id="thread" aria-label="对话内容"></section>
+            <p class="sr-only" id="srStatus" role="status" aria-live="polite"></p>
+
+            <!-- 底部输入区：问题输入、资料范围选择与发送 -->
+            <footer class="composer">
+                <div class="composer-inner">
+                    <div class="input-shell">
+                        <textarea id="input" rows="1" placeholder="向教研助手提问…" spellcheck="false" aria-label="输入问题"></textarea>
+                        <div class="composer-row">
+                            <label class="scope" title="限定检索的资料范围">
+                                <svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>
+                                <span class="scope-label">资料范围</span>
+                                <span class="select">
+                                    <select id="sourceFilter" aria-label="资料范围"></select>
+                                    <svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg>
+                                </span>
+                            </label>
+                            <div class="composer-actions">
+                                <span class="kbd-hint"><kbd>Enter</kbd> 发送 · <kbd>Shift</kbd> + <kbd>Enter</kbd> 换行</span>
+                                <button class="send" id="sendBtn" type="button" disabled aria-label="发送">
+                                    <span class="send-label">发送</span>
+                                    <svg class="icon send-icon" aria-hidden="true"><use href="#i-arrow-up"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="disclaimer">回答由本地检索资料与大模型生成，关键信息请以学校正式文件为准。</p>
+                </div>
+            </footer>
+        </main>
+
+        <div class="scrim" id="scrim" aria-hidden="true"></div>
+    </div>
+
+    <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+    <!-- 清除会话确认弹窗 -->
+    <dialog class="dialog" id="clearDialog" aria-labelledby="clearDialogTitle">
+        <div class="dialog-body">
+            <p class="dialog-eyebrow">CLEAR CONVERSATION</p>
+            <h2 id="clearDialogTitle">清除当前对话？</h2>
+            <p>将在服务端删除本会话的全部问答记录，此操作不可恢复。</p>
+            <div class="dialog-actions">
+                <button type="button" class="ghost-btn" id="cancelClear">取消</button>
+                <button type="button" class="danger-btn" id="confirmClear">确认清除</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- 第三方 Markdown 渲染库与前端主逻辑 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" defer></script>
+    <script src="/static/app.js" defer></script>
+</body>
+</html>
